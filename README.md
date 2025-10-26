@@ -1,58 +1,80 @@
 # GitLab CI/CD Demo Project
 
-This project is a simple demonstration of how to set up a basic CI/CD pipeline using GitLab's built-in automation tools. The pipeline automatically builds and tests a simple static HTML website upon every push to the `main` branch.
+This document outlines the steps to create and trigger a basic CI/CD pipeline in GitLab.
 
-## 1. Project Overview
+## 1. Local Project Setup
 
-The goal of this project is to showcase the fundamental concepts of Continuous Integration (CI) and Continuous Delivery (CD). We achieve this by:
-*   **Continuous Integration:** Automatically running tests on our code every time a change is committed.
-*   **Automation:** Using a `.gitlab-ci.yml` file to define the entire build and test process.
+1.  Create a new local directory for your project.
+    ```bash
+    mkdir gitlab-cicd-demo
+    cd gitlab-cicd-demo
+    ```
 
-The repository contains two key files:
-*   `index.html`: A minimal HTML file representing our website.
-*   `.gitlab-ci.yml`: The blueprint for our CI/CD pipeline.
+2.  Initialize it as a Git repository.
+    ```bash
+    git init -b main
+    ```
 
----
+3.  Create the website's main file.
+    ```bash
+    echo "<h1>Hello GitLab CI/CD!</h1>" > index.html
+    ```
 
-## 2. The CI/CD Pipeline
+4.  Create the GitLab CI/CD configuration file.
+    ```bash
+    # Create a file named .gitlab-ci.yml and add the content below
+    ```
 
-The pipeline is defined in the `.gitlab-ci.yml` file and consists of two distinct stages that run in sequence.
+    **`.gitlab-ci.yml`**
+    ```yaml
+    image: alpine:latest
 
-### Stage 1: `build`
+    stages:
+      - build
+      - test
 
-This stage is responsible for "building" the website. In a real-world scenario, this might involve compiling code, running a static site generator, or bundling assets. For our simple demo, it performs the following steps:
+    build_website:
+      stage: build
+      script:
+        - mkdir public
+        - cp index.html public/
+      artifacts:
+        paths:
+          - public
 
-*   **Job:** `build_website`
-    *   Creates a directory named `public`.
-    *   Copies the `index.html` file into the `public` directory.
-    *   Saves the entire `public` directory as a job **artifact**. This makes the directory and its contents available to all subsequent stages in the pipeline.
+    test_website:
+      stage: test
+      script:
+        - grep "Hello GitLab CI/CD!" public/index.html
+    ```
 
-### Stage 2: `test`
+5.  Add and commit all files.
+    ```bash
+    git add .
+    git commit -m "Initial commit with website and CI pipeline"
+    ```
 
-This stage runs after the `build` stage has successfully completed. Its purpose is to validate the output of the build stage.
+## 2. GitLab Project Setup
 
-*   **Job:** `test_website`
-    *   It automatically receives the `public` directory artifact from the previous stage.
-    *   It runs a simple test using the `grep` command to verify that the `index.html` file within the `public` directory contains the expected text: "Hello GitLab CI/CD!".
-    *   If the text is found, the job succeeds. If the text is not found, `grep` will return an error, causing the job and the entire pipeline to fail.
+1.  On GitLab, create a new, blank project named `gitlab-cicd-demo`.
+2.  Do **not** initialize it with a README.
+3.  Copy the repository's HTTPS URL from the project page.
 
----
+## 3. Triggering the Pipeline
 
-## 3. How It Works
+1.  Connect your local repository to the remote GitLab repository.
+    ```bash
+    git remote add origin <PASTE_YOUR_GITLAB_URL_HERE>
+    ```
 
-1.  **Trigger:** The pipeline is automatically triggered by a `git push` event to the `main` branch of this repository.
-2.  **Runner:** GitLab assigns a shared Runner to execute the pipeline.
-3.  **Environment:** The Runner spins up a lightweight Docker container using the `alpine:latest` image, providing a clean and consistent environment for our jobs.
-4.  **Execution:** The Runner reads the `.gitlab-ci.yml` file and executes the jobs stage by stage.
-5.  **Feedback:** The success or failure of the pipeline is reported back to the GitLab UI, providing immediate feedback on the quality of the commit.
+2.  Push your commit to GitLab. This will automatically trigger the pipeline.
+    ```bash
+    git push -u origin main
+    ```
 
----
+## 4. Verifying the Pipeline
 
-## 4. How to View the Pipeline
-
-1.  Navigate to the project's main page on GitLab.
-2.  In the left-hand navigation pane, go to **`Build` > `Pipelines`**.
-3.  This page lists all historical and current pipeline runs.
-4.  Click on the status icon for any pipeline to see a detailed view of its stages and jobs.
-5.  Click on a specific job name (e.g., `build_website` or `test_website`) to view its complete console log output.
-
+1.  In your GitLab project, navigate to **`Build` > `Pipelines`**.
+2.  Observe the status of the latest pipeline run.
+3.  Click on the pipeline's status to view the `build` and `test` stages.
+4.  Click on each job to view its console output.
